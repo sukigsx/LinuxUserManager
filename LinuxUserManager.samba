@@ -1,0 +1,203 @@
+#!/bin/bash
+
+SAMBA_CONF="/etc/samba/smb.conf"
+
+#colores
+rojo="\e[0;31m\033[1m" #rojo
+verde="\e[;32m\033[1m"
+azul="\e[0;34m\033[1m"
+amarillo="\e[0;33m\033[1m"
+rosa="\e[0;35m\033[1m"
+turquesa="\e[0;36m\033[1m"
+borra_colores="\033[0m\e[0m" #borra colores
+
+menu_info(){
+# muestra el menu de sukigsx
+echo ""
+echo -e "${rosa}            _    _                  ${azul}   Nombre del script${borra_colores} ($NombreScript)"
+echo -e "${rosa}  ___ _   _| | _(_) __ _ _____  __  ${azul}   Descripcion${borra_colores} ($DescripcionDelScript)"
+echo -e "${rosa} / __| | | | |/ / |/ _\ / __\ \/ /  ${azul}   Version            =${borra_colores} $version"
+echo -e "${rosa} \__ \ |_| |   <| | (_| \__ \>  <   ${azul}   Conexion Internet  =${borra_colores} $conexion"
+echo -e "${rosa} |___/\__,_|_|\_\_|\__, |___/_/\_\  ${azul}   Software necesario =${borra_colores} $software"
+echo -e "${rosa}                  |___/             ${azul}   Actualizado        =${borra_colores} $actualizado"
+echo -e ""
+echo -e "${azul} Contacto:${borra_colores} (Correo $Correo) (Web $Web)${borra_colores}"
+echo ""
+}
+
+function show_users() {
+    echo -e "${azul} === Configuración de nuevo recurso Samba en ${borra_colores} $base_dir ${azul}===${borra_colores}"
+    echo -e ""
+    echo -e "${azul} Usuarios del sistema:${borra_colores}"
+    echo -e ""
+    awk -F: '$3 >= 1000 && $1 != "nobody" { print $1 }' /etc/passwd
+}
+
+function listar_recursos_samba() {
+    echo ""
+    echo -e " ${azul} Recursos compartidos configurados en Samba:${borra_colores}"
+    echo -e""
+
+    recursos=$(grep "^\[" /etc/samba/smb.conf \
+        | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' \
+        | sed 's/^\[\(.*\)\]$/\1/' \
+        | grep -viE '^(global|printers|print[$])$')
+
+    if [ -z "$recursos" ]; then
+        echo ""
+        echo -e " ❌ ${amarillo}No tienes recursos compartidos.${borra_colores}"; sleep 3
+        recursos_compartidos="no"
+        return
+    else
+        echo " $recursos"
+        recursos_compartidos="si"
+    fi
+}
+
+
+function configurar_samba() {
+    while true; do
+    clear
+    menu_info
+    show_users
+    listar_recursos_samba
+    echo ""
+    read -p " Nombre del recurso compartido (el que se ve): " recurso_compartido
+
+    # Leer usuarios y verificar existencia
+    #while true; do
+        read -p " Usuarios permitidos (separados por espacio): " -a usuarios
+        usuarios_validos=()
+        usuarios_invalidos=()
+
+        for usuario in "${usuarios[@]}"; do
+            if id "$usuario" &>/dev/null; then
+                usuarios_validos+=("$usuario")
+            else
+                usuarios_invalidos+=("$usuario")
+            fi
+        done
+
+        if [ ${#usuarios_invalidos[@]} -eq 0 ]; then
+            break
+        else
+            echo -e ""
+            echo -e " ❌ ${rojo}Los siguientes usuarios no existen:${borra_colores} ${usuarios_invalidos[*]}"
+            echo -e " 🔁 ${amarillo}Intenta de nuevo.${borra_colores}"; sleep 4
+        fi
+    done
+
+    CONFIG="[$recurso_compartido]
+    path = $base_dir
+    valid users = ${usuarios_validos[*]}
+    read only = no
+    browsable = yes
+    writable = yes
+    create mask = 0775
+    directory mask = 0775
+"
+
+    if ! grep -q "\[$recurso_compartido\]" "$SAMBA_CONF"; then
+        echo "$CONFIG" | sudo tee -a "$SAMBA_CONF" > /dev/null
+        echo -e ""
+        echo -e " ✅ ${verde}Configuración añadida para ${borra_colores} $recurso_compartido"
+    else
+        echo -e ""
+        echo -e " ⚠️ ${amarillo}El recurso${borra_colores} $recurso_compartido ${amarillo}ya existe. No se añadió nada.${borra_colores}"
+    fi
+
+    sudo systemctl restart smbd
+    echo -e ""
+    echo -e " 🔁 ${verde}Servicio Samba reiniciado.${borra_colores}"; sleep 2
+    recursos_compartidos="si"
+}
+
+function ver_configuracion() {
+    sudo nano "$SAMBA_CONF"
+}
+
+function eliminar_configuracion() {
+    listar_recursos_samba
+    if [ "$recursos_compartidos" = "no" ]; then
+        return
+    fi
+
+    echo ""
+    read -p " Nombre del recurso compartido a eliminar: " recurso_compartido
+
+    # Verificar si el recurso existe
+    recurso_existente=$(grep -i "^\[$recurso_compartido\]" /etc/samba/smb.conf \
+        | sed -e 's/^\[\(.*\)\]$/\1/')
+
+    if [ -z "$recurso_existente" ]; then
+        echo -e ""
+        echo -e " ❌ ${rojo}El recurso '$recurso_compartido' no existe.${borra_colores}"
+        echo -e " ℹ️  ${amarillo}No se realizó ninguna eliminación.${borra_colores}"
+        sleep 4
+        return 1
+    fi
+
+    # Hacemos una copia de seguridad
+    sudo cp "$SAMBA_CONF" "$SAMBA_CONF.bak"
+
+    # Usamos sed para eliminar el bloque completo
+    sudo sed -i "/\[$recurso_compartido\]/,/^$/d" "$SAMBA_CONF"
+
+    echo -e ""
+    echo -e " 🗑️${verde} Configuración de${borra_colores} $recurso_compartido ${verde}eliminada."
+    sudo systemctl restart smbd
+    echo -e " 🔁${verde} Servicio Samba reiniciado.${borra_colores}"; sleep 2
+}
+
+function menu() {
+    while true; do
+        clear
+        menu_info
+        echo
+        echo -e "${azul}--- Gestor de Configuración de Samba, carpeta base${borra_colores} $base_dir ${azul}---${borra_colores}"
+        echo -e ""
+        echo -e "${azul}  1.${borra_colores} Añadir recurso compartido"
+        echo -e "${azul}  2.${borra_colores} Ver/modificar archivo smb.conf"
+        echo -e "${azul}  3.${borra_colores} Eliminar recurso compartido"
+        echo -e "${azul}  4.${borra_colores} Reiniciar servicio Samba"
+        echo -e "${azul} 99.${borra_colores} Salir"
+        echo ""
+        read -p " Seleccione una opción: " opcion
+
+        case $opcion in
+            1) configurar_samba ;;
+            2) ver_configuracion ;;
+            3) eliminar_configuracion ;;
+            4) sudo systemctl restart smbd; echo ""; echo -e "🔁 ${verde}Servicio Samba reiniciado.${borra_colores}"; sleep 2 ;;
+            99) break ;;
+            *) echo ""; echo -e " ❌ ${amarillo}Opción inválida.${borra_colores}"; sleep 2 ;;
+        esac
+    done
+}
+
+function control_ejecucion(){
+    if [[ $NombreScript == "Linux User Manager" ]]; then
+        echo ""
+    else
+        clear
+        echo ""
+        echo -e "${amarillo} Hay que ejecutar el script desde LinuxUserManager.sh${borra_colores}"
+        echo ""
+        echo -e "${azul} GRACIAS POR UTILIZAR MI SCRIPT${borra_colores}"
+        echo ""
+        sleep 1
+        exit
+    fi
+    clear
+}
+
+# Verificar permisos de root
+if [[ $EUID -ne 0 ]]; then
+    echo -e ""
+    echo -e " ⚠️ ${rojo}Este script debe ejecutarse como root.${borra_colores}"
+    echo -e ""
+    exit 1
+fi
+control_ejecucion
+base_dir=$(< /tmp/base_dir)
+menu

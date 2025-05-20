@@ -1,0 +1,192 @@
+#!/bin/bash
+
+#colores
+rojo="\e[0;31m\033[1m" #rojo
+verde="\e[;32m\033[1m"
+azul="\e[0;34m\033[1m"
+amarillo="\e[0;33m\033[1m"
+rosa="\e[0;35m\033[1m"
+turquesa="\e[0;36m\033[1m"
+borra_colores="\033[0m\e[0m" #borra colores
+
+menu_info(){
+# muestra el menu de sukigsx
+echo ""
+echo -e "${rosa}            _    _                  ${azul}   Nombre del script${borra_colores} ($NombreScript)"
+echo -e "${rosa}  ___ _   _| | _(_) __ _ _____  __  ${azul}   Descripcion${borra_colores} ($DescripcionDelScript)"
+echo -e "${rosa} / __| | | | |/ / |/ _\ / __\ \/ /  ${azul}   Version            =${borra_colores} $version"
+echo -e "${rosa} \__ \ |_| |   <| | (_| \__ \>  <   ${azul}   Conexion Internet  =${borra_colores} $conexion"
+echo -e "${rosa} |___/\__,_|_|\_\_|\__, |___/_/\_\  ${azul}   Software necesario =${borra_colores} $software"
+echo -e "${rosa}                  |___/             ${azul}   Actualizado        =${borra_colores} $actualizado"
+echo -e ""
+echo -e "${azul} Contacto:${borra_colores} (Correo $Correo) (Web $Web)${borra_colores}"
+echo ""
+}
+
+function listar_show_users() {
+    clear
+    menu_info
+    echo ""
+    echo -e "${azul} Listado de usuarios del sistema:${borra_colores}"
+    echo -e "${verde}"
+    awk -F: '$3 >= 1000 && $1 != "nobody" { print $1 }' /etc/passwd
+    echo -e "${borra_colores}"
+    read -p " Pulsa una tecla para continuar." pause
+}
+
+function show_users() {
+    clear
+    menu_info
+    echo -e "${azul} Listado de usuarios del sistema:${borra_colores}"
+    echo -e "${verde}"
+    awk -F: '$3 >= 1000 && $1 != "nobody" { print $1 }' /etc/passwd
+    echo -e "${borra_colores}"
+}
+
+function create_user() {
+    show_users
+    read -p " Ingrese los nombres de los nuevos usuarios (separados por espacio): " -a usernames
+
+    for username in "${usernames[@]}"; do
+        # Validar nombre de usuario
+        if [[ ! "$username" =~ ^[a-z_][a-z0-9_-]{0,31}$ ]]; then
+            echo -e "${rojo} Nombre de usuario inválido:${amarillo} $username ${borra_colores}"
+            echo -e "${amarillo} Debe comenzar con una letra minúscula o guion bajo, y solo contener letras minúsculas, números, guiones o guiones bajos (máx. 32 caracteres).${borra_colores}"
+            echo ""
+            echo -e " El usuario $username No se creara. Pulsa una tecla para continuar."; read p
+            continue
+        fi
+
+        # Verificar si el usuario ya existe
+        if id "$username" &>/dev/null; then
+            echo ""
+            echo -e "${amarillo} El usuario${borra_colores} $username ${amarillo}ya existe.${borra_colores}"; sleep 2
+            continue
+        fi
+
+        # Solicitar contraseña
+        read -s -p " Ingrese una contraseña para $username: " password
+        echo
+        read -s -p " Confirme la contraseña para $username: " password_confirm
+        echo
+
+        if [[ "$password" != "$password_confirm" ]]; then
+            echo ""
+            echo -e "${amarillo} Las contraseñas no coinciden para${borra_colores} $username ${borra_colores}"; sleep 2
+            continue
+        fi
+
+        # Preguntar si se permite login
+        read -p " ¿Deseas permitir login al sistema para $username? (s/n): " login
+
+        if [[ "$login" =~ ^[Ss]$ ]]; then
+            sudo useradd -m "$username" &>/dev/null
+        else
+            sudo useradd -M -s /usr/sbin/nologin "$username" &>/dev/null
+        fi
+
+        # Establecer contraseña en el sistema y en Samba
+        echo "$username:$password" | sudo chpasswd
+        printf "$password\n$password\n" | sudo smbpasswd -a -s "$username" &>/dev/null
+        echo ""
+        echo -e "${verde} Usuario${borra_colores} $username ${verde}creado y sincronizado con Samba.${borra_colores}"; sleep 2
+    done
+}
+
+
+function change_password() {
+    show_users
+    read -p " Ingrese los nombres de los usuarios a modificar (separados por espacio): " -a usernames
+
+    for username in "${usernames[@]}"; do
+        if ! id "$username" &>/dev/null; then
+            echo ""
+            echo -e "${amarillo} El usuario${borra_colores} $username ${amarillo}no existe.${borra_colores}"; sleep 2
+            continue
+        fi
+        echo ""
+        read -s -p " Nueva contraseña para $username: " password
+        echo
+        read -s -p " Confirme la nueva contraseña para $username: " password_confirm
+        echo
+
+        if [[ "$password" != "$password_confirm" ]]; then
+            echo -e "${rojo} Las contraseñas no coinciden para${borra_colores} $username"; sleep 3
+            continue
+        fi
+
+        echo "$username:$password" | chpasswd &>/dev/null
+        echo "$password" | smbpasswd -s "$username" &>/dev/null
+
+        echo -e "${verde} Contraseña de${borra_colores} $username ${verde}actualizada y sincronizada con Samba.${borra_colores}"; sleep 2
+    done
+}
+
+function delete_user() {
+    show_users
+    read -p " Ingrese los nombres de los usuarios a eliminar (separados por espacio): " -a usernames
+
+    for username in "${usernames[@]}"; do
+        if ! id "$username" &>/dev/null; then
+            echo ""
+            echo -e "${amarillo} El usuario${borra_colores} $username ${amarillo}no existe, No se puede eliminar.${borra_colores}"; sleep 2
+            continue
+        fi
+
+        read -p " ¿Estás seguro que deseas eliminar al usuario $username? (s/n): " confirm
+        if [[ "$confirm" == [Ss] ]]; then
+            smbpasswd -x "$username" &>/dev/null
+            userdel -r "$username" &>/dev/null
+            echo ""
+            echo -e "${verde} Usuario${borra_colores} $username ${verde}eliminado del sistema y de Samba${borra_colores}"; sleep 2
+        else
+            echo ""
+            echo -e "${verde} Eliminación de${borra_colores} $username ${verde}cancelada.${borra_colores}"; sleep 2
+        fi
+    done
+}
+
+function menu() {
+    while true; do
+        clear
+        menu_info
+        echo ""
+        echo -e "${azul} --- Gestor de usuarios del sistema y Samba ---${borra_colores}"
+        echo ""
+        echo -e "  1.${azul} Mostrar usuarios${borra_colores}"
+        echo -e "  2.${azul} Crear usuarios${borra_colores}"
+        echo -e "  3.${azul} Cambiar contraseñas${borra_colores}"
+        echo -e "  4.${azul} Eliminar usuarios${borra_colores}"
+        echo -e ""
+        echo -e " 99.${azul} Atras (Menu principal)${borra_colores}"
+        echo -e ""
+        read -e -p " Seleccione una opción: " opcion
+
+        case $opcion in
+            1) listar_show_users ;;
+            2) create_user ;;
+            3) change_password ;;
+            4) delete_user ;;
+           99) exit ;;
+            *) echo -e "${amarillo} Opción inválida.${borra_colores}"; sleep 2 ;;
+        esac
+    done
+}
+
+function control_ejecucion(){
+    if [[ $NombreScript == "Linux User Manager" ]]; then
+        echo ""
+    else
+        clear
+        echo ""
+        echo -e "${amarillo} Hay que ejecutar el script desde LinuxUserManager.sh${borra_colores}"
+        echo ""
+        echo -e "${azul} GRACIAS POR UTILIZAR MI SCRIPT${borra_colores}"
+        echo ""
+        sleep 1
+        exit
+    fi
+    clear
+}
+control_ejecucion
+menu

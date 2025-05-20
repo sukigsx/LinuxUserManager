@@ -1,0 +1,262 @@
+#!/bin/bash
+
+# Colores personalizados
+rojo="\e[0;31m\033[1m"       # rojo
+verde="\e[;32m\033[1m"       # verde
+azul="\e[0;34m\033[1m"       # azul
+amarillo="\e[0;33m\033[1m"   # amarillo
+rosa="\e[0;35m\033[1m"       # rosa
+turquesa="\e[0;36m\033[1m"   # turquesa
+borra_colores="\033[0m\e[0m" # reset
+
+#toma el control al pulsar control + c
+trap ctrl_c INT
+function ctrl_c()
+{
+clear
+echo ""
+echo -e "${azul} GRACIAS POR UTILIZAR MI SCRIPT${borra_colores}"
+echo ""
+sudo rm -r /tmp/base_dir >/dev/null 2>&1
+sleep 1
+exit
+}
+
+menu_info(){
+    echo ""
+    echo -e "${rosa}            _    _                  ${azul}   Nombre del script${borra_colores} ($NombreScript)"
+    echo -e "${rosa}  ___ _   _| | _(_) __ _ _____  __  ${azul}   Descripcion${borra_colores} ($DescripcionDelScript)"
+    echo -e "${rosa} / __| | | | |/ / |/ _\ / __\ \/ /  ${azul}   Version            =${borra_colores} $version"
+    echo -e "${rosa} \__ \ |_| |   <| | (_| \__ \>  <   ${azul}   Conexion Internet  =${borra_colores} $conexion"
+    echo -e "${rosa} |___/\__,_|_|\_\_|\__, |___/_/\_\  ${azul}   Software necesario =${borra_colores} $software"
+    echo -e "${rosa}                  |___/             ${azul}   Actualizado        =${borra_colores} $actualizado"
+    echo ""
+    echo -e "${azul} Contacto:${borra_colores} (Correo $Correo) (Web $Web)${borra_colores}"
+    echo ""
+}
+
+function control_ejecucion(){
+    if [[ $NombreScript == "Linux User Manager" ]]; then
+        echo ""
+    else
+        clear
+        echo ""
+        echo -e "${amarillo} Hay que ejecutar el script desde LinuxUserManager.sh${borra_colores}"
+        echo ""
+        echo -e "${azul} GRACIAS POR UTILIZAR MI SCRIPT${borra_colores}"
+        echo ""
+        sleep 1
+        exit
+    fi
+    clear
+}
+
+
+mostrar_ayuda_general(){
+    clear
+    menu_info
+    echo -e "${rosa}==============================================${borra_colores}"
+    echo -e "${azul}        Descripcion General del script        ${borra_colores}"
+    echo -e "${rosa}==============================================${borra_colores}"
+    echo ""
+    echo -e "${verde}Nombre del Script:${borra_colores} Linux User Manager"
+    echo -e "\n${turquesa}Descripción General:${borra_colores}"
+    echo -e "${amarillo}--------------------${borra_colores}"
+    echo "Este script en Bash es una herramienta interactiva para gestionar usuarios, carpetas compartidas, permisos y configuración de Samba en sistemas Linux."
+    echo -e "\n${turquesa}Funcionalidad Principal:${borra_colores}"
+    echo -e "${amarillo}------------------------${borra_colores}"
+    echo -e "- ${verde}Nombre:${borra_colores} Linux User Manager"
+    echo -e "- ${verde}Propósito:${borra_colores} Configurar y administrar usuarios, directorios compartidos, permisos de acceso, y Samba para compartir archivos en red."
+    echo -e "\n${turquesa}Requisitos y Verificaciones:${borra_colores}"
+    echo -e "${amarillo}----------------------------${borra_colores}"
+    echo "- Ejecutado como root: Verifica si se tienen privilegios administrativos. Si no, solicita autenticación mediante sudo."
+    echo "- Comprobación de conexión a internet: Necesaria para actualizaciones y la instalación de software requerido."
+    echo -e "- Verificación e instalación de software necesario: Comprueba que herramientas como ${verde}git${borra_colores}, ${verde}diff${borra_colores}, ${verde}curl${borra_colores}, etc., estén instaladas. Si no están, las instala automáticamente."
+    echo "- Actualización automática del script desde GitHub: Si hay una versión más reciente en el repositorio, la descarga y reemplaza el script actual."
+    echo -e "\n${turquesa}Gestión de Carpeta Base:${borra_colores}"
+    echo -e "${amarillo}------------------------${borra_colores}"
+    echo "- Solicita al usuario una ruta para la carpeta base que contendrá los recursos compartidos."
+    echo "- Si no existe la ruta, permite crearla automáticamente."
+    echo "- Almacena esta ruta temporalmente para uso posterior en el script."
+    echo -e "\n${turquesa}Interfaz de Menú Interactivo:${borra_colores}"
+    echo -e "${amarillo}-----------------------------${borra_colores}"
+    echo "Muestra un menú desde donde el usuario puede:"
+    echo "  1. Administrar usuarios del sistema."
+    echo "  2. Gestionar carpetas compartidas."
+    echo "  3. Asignar permisos a las carpetas compartidas."
+    echo "  4. Configurar Samba para compartir archivos."
+    echo "  5. Seleccionar o cambiar la carpeta base."
+    echo " 90. Ver ayuda."
+    echo " 99. Salir del script."
+    echo -e "\n${turquesa}Limpieza y Salida:${borra_colores}"
+    echo -e "${amarillo}------------------${borra_colores}"
+    echo "- Al presionar Ctrl+C o elegir la opción de salir, elimina archivos temporales y muestra un mensaje de despedida."
+    echo -e "\n${turquesa}Resumen:${borra_colores}"
+    echo -e "${amarillo}--------${borra_colores}"
+    echo "Este script está diseñado para facilitar tareas comunes de administración de usuarios y compartición de archivos en redes locales."
+    echo "Es especialmente útil en entornos educativos, pequeñas oficinas o para usuarios que deseen automatizar configuraciones de red local."
+    read p
+}
+
+mostrar_ayuda_usuarios(){
+    clear
+    menu_info
+    echo -e "${rosa}==============================================${borra_colores}"
+    echo -e "${azul}             Gestión de Usuarios              ${borra_colores}"
+    echo -e "${rosa}==============================================${borra_colores}"
+    echo -e ""
+    echo -e "${rosa}Este script es una${borra_colores} ${turquesa}herramienta para administrar usuarios en un sistema Linux${borra_colores} ${rosa}y también para sincronizarlos con un servidor Samba.${borra_colores}"
+    echo -e ""
+    echo -e "${azul}Con este programa puedes:${borra_colores}"
+    echo -e "  ${verde}- Ver la lista de usuarios creados en el sistema.${borra_colores}"
+    echo -e "  ${verde}- Crear nuevos usuarios, elegir si pueden iniciar sesión y asignarles contraseña sincronizada con Samba.${borra_colores}"
+    echo -e "  ${verde}- Cambiar la contraseña de usuarios existentes y actualizarla también en Samba.${borra_colores}"
+    echo -e "  ${verde}- Eliminar usuarios del sistema y Samba con confirmación para evitar errores.${borra_colores}"
+    echo -e ""
+    echo -e "${amarillo}El script incluye un menú fácil de usar con colores para mayor claridad y muestra información básica y contacto del autor.${borra_colores}"
+    echo -e ""
+    echo -e "${rosa}En resumen:${borra_colores} Es un asistente práctico para gestionar usuarios en Linux y Samba, sin necesidad de usar comandos complejos directamente."
+    echo -e ""
+    read p
+}
+
+mostrar_ayuda_carpetas(){
+clear
+menu_info
+    echo -e "${rosa}==============================================${borra_colores}"
+    echo -e "${azul}             Gestión de Carpetas              ${borra_colores}"
+    echo -e "${rosa}==============================================${borra_colores}"
+    echo -e ""
+    echo -e "${rosa}Este script es un${borra_colores} ${turquesa}gestor de carpetas${borra_colores} ${rosa}que te permite administrar carpetas dentro de una ruta base definida.${borra_colores}"
+    echo -e ""
+    echo -e "${azul}Con este programa puedes:${borra_colores}"
+    echo -e "  ${verde}- Listar las carpetas existentes dentro de la carpeta base.${borra_colores}"
+    echo -e "  ${verde}- Crear nuevas carpetas, asegurándote que no existan antes y aplicando permisos especiales.${borra_colores}"
+    echo -e "  ${verde}- Renombrar carpetas existentes dentro de la ruta base.${borra_colores}"
+    echo -e "  ${verde}- Borrar carpetas específicas o eliminar toda la carpeta base y su contenido con confirmación.${borra_colores}"
+    echo -e ""
+    echo -e "${amarillo}El script verifica que tengas definida la carpeta base, y avisa si no está configurada.${borra_colores}"
+    echo -e ""
+    echo -e "${rosa}En resumen:${borra_colores} Es una herramienta para gestionar carpetas con facilidad y seguridad, con un menú claro y colores que facilitan la lectura."
+    echo -e ""
+    read p
+}
+
+
+mostrar_ayuda_permisos(){
+    clear
+    menu_info
+    echo -e "${rosa}==============================================${borra_colores}"
+    echo -e "${azul}           Gestión de Permisos ACL            ${borra_colores}"
+    echo -e "${rosa}==============================================${borra_colores}"
+    echo ""
+    echo -e "${amarillo}Este script permite administrar permisos ACL para carpetas compartidas en Linux.${borra_colores}"
+    echo ""
+    echo -e "${verde}FUNCIONALIDADES PRINCIPALES:${turquesa}"
+    echo -e " 1.${turquesa} Muestra información básica del script (nombre, versión, conexión, software)."
+    echo -e " 2.${turquesa} Solicita la ruta donde están las carpetas compartidas para modificar permisos."
+    echo -e " 3.${turquesa} Verifica que la ruta exista y contenga carpetas o archivos."
+    echo -e " 4.${turquesa} Lista usuarios del sistema, marcando a los administradores."
+    echo -e " 5.${turquesa} Muestra los permisos actuales por usuario y carpeta en formato tabla."
+    echo -e " 6.${turquesa} Permite modificar permisos ACL de cada usuario en cada carpeta con opciones:"
+    echo -e "     - Control total (rwx)"
+    echo -e "     - Solo lectura (rx)"
+    echo -e "     - Sin acceso"
+    echo -e "     - Mantener permisos actuales"
+    echo ""
+    echo -e "${verde}USO:${borra_colores}"
+    echo -e " Ejecuta el script con permisos de administrador para aplicar los cambios."
+    echo -e " Debes proporcionar una ruta válida donde se encuentren las carpetas compartidas."
+    echo ""
+    echo -e "${amarillo}IMPORTANTE:${borra_colores}"
+    echo -e " Este script debe ser ejecutado desde 'LinuxUserManager.sh' para funcionar correctamente."
+    echo ""
+    echo -e "${rosa}==============================================${borra_colores}"
+    echo ""
+    read p
+}
+
+mostrar_ayuda_samba(){
+    clear
+    menu_info
+    echo -e "${rosa}==============================================${borra_colores}"
+    echo -e "${azul}          Gestor de Recursos Samba            ${borra_colores}"
+    echo -e "${rosa}==============================================${borra_colores}"
+    echo ""
+    echo -e "${amarillo}Este script permite gestionar recursos compartidos de Samba en Linux.${borra_colores}"
+    echo ""
+    echo -e "${verde}FUNCIONALIDADES PRINCIPALES:${turquesa}"
+    echo -e " 1.${turquesa} Mostrar información básica del script."
+    echo -e " 2.${turquesa} Listar usuarios válidos del sistema."
+    echo -e " 3.${turquesa} Mostrar recursos compartidos configurados en Samba."
+    echo -e " 4.${turquesa} Añadir un nuevo recurso compartido con permisos para usuarios específicos."
+    echo -e " 5.${turquesa} Ver o editar el archivo de configuración smb.conf."
+    echo -e " 6.${turquesa} Eliminar un recurso compartido existente."
+    echo -e " 7.${turquesa} Reiniciar el servicio Samba para aplicar cambios."
+    echo ""
+    echo -e "${verde}USO:${borra_colores}"
+    echo -e " El script debe ejecutarse como root y desde 'LinuxUserManager.sh' para funcionar correctamente."
+    echo -e " Se requiere que exista un archivo /tmp/base_dir con la ruta base para los recursos."
+    echo ""
+    echo -e "${amarillo}IMPORTANTE:${borra_colores}"
+    echo -e " Antes de eliminar un recurso, el script hace copia de seguridad de smb.conf."
+    echo -e " Valida que los usuarios indicados existan en el sistema."
+    echo ""
+    echo -e "${rosa}==============================================${borra_colores}"
+    echo ""
+    read p
+}
+
+#empieza lo gordo
+control_ejecucion
+
+while :
+do
+clear
+menu_info
+#comprueba la carpeta base y lo muestra en el menu
+if [ -f /tmp/base_dir ]; then
+    base_dir=$(cat /tmp/base_dir)
+else
+    base_dir="$(echo -e "${amarillo} Carpeta base NO seleccionada${borra_colores}")"
+
+fi
+
+echo -e "${azul} --- Menu de ayuda ---${borra_colores}"
+echo -e ""
+echo -e "     1. ${azul}Muestra la la descripcion general.${borra_colores}"
+echo -e "     2. ${azul}Muestra la ayuda de creacion/modificacion de usuarios.${borra_colores}"
+echo -e "     3. ${azul}Muestra la ayuda de creacion/modificacion carpetas.${borra_colores}"
+echo -e "     4. ${azul}Muestra la ayuda de configuracion de permisos ACL.${borra_colores}"
+echo -e "     5. ${azul}Muestra la ayuda de configuracion Samba.${borra_colores}"
+echo -e ""
+echo -e "    99. ${azul}Atras.${borra_colores}"
+echo -e ""
+echo -n " Seleccione una opcion del menu -> "
+read opcion
+case $opcion in
+        1)  mostrar_ayuda_general
+            ;;
+
+        2)  mostrar_ayuda_usuarios
+            ;;
+
+        3)  mostrar_ayuda_carpetas
+            ;;
+
+        4)  mostrar_ayuda_permisos
+            ;;
+
+        5)  mostrar_ayuda_samba
+            ;;
+
+        99) break
+            ;;
+
+        *)      #se activa cuando se introduce una opcion no controlada del menu
+                echo "";
+                echo -e " ${amarillo}OPCION NO DISPONIBLE EN EL MENU.${borra_colores}"; sleep 2
+                ;;
+
+esac
+done

@@ -1,0 +1,158 @@
+#!/bin/bash
+
+# colores
+rojo="\e[0;31m\033[1m" # rojo
+verde="\e[;32m\033[1m"
+azul="\e[0;34m\033[1m"
+amarillo="\e[0;33m\033[1m"
+rosa="\e[0;35m\033[1m"
+turquesa="\e[0;36m\033[1m"
+borra_colores="\033[0m\e[0m" # borra colores
+
+menu_info(){
+    echo ""
+    echo -e "${rosa}            _    _                  ${azul}   Nombre del script${borra_colores} ($NombreScript)"
+    echo -e "${rosa}  ___ _   _| | _(_) __ _ _____  __  ${azul}   Descripcion${borra_colores} ($DescripcionDelScript)"
+    echo -e "${rosa} / __| | | | |/ / |/ _\ / __\ \/ /  ${azul}   Version            =${borra_colores} $version"
+    echo -e "${rosa} \__ \ |_| |   <| | (_| \__ \>  <   ${azul}   Conexion Internet  =${borra_colores} $conexion"
+    echo -e "${rosa} |___/\__,_|_|\_\_|\__, |___/_/\_\  ${azul}   Software necesario =${borra_colores} $software"
+    echo -e "${rosa}                  |___/             ${azul}   Actualizado        =${borra_colores} $actualizado"
+    echo ""
+    echo -e "${azul} Contacto:${borra_colores} (Correo $Correo) (Web $Web)${borra_colores}"
+    echo ""
+}
+
+modificar_permisos() {
+    clear
+    menu_info
+
+    if [[ -f /tmp/base_dir ]]; then
+        base_dir=$(< /tmp/base_dir)
+    else
+        read -p " Ingrese la ruta donde están las carpetas compartidas (ej: /home/compartido): " base_dir
+        clear
+        menu_info
+    fi
+
+    if [[ ! -d "$base_dir" ]]; then
+        echo ""
+        echo -e "${amarillo} La ruta especificada no existe o no la has definido.${borra_colores}"
+        sleep 3
+        exit 1
+    fi
+
+    # Comprobar si hay al menos un archivo o carpeta dentro
+    if [[ -z "$(find "$base_dir" -mindepth 1 -maxdepth 1)" ]]; then
+        echo ""
+        echo -e "${amarillo} El directorio${borra_colores} $base_dir ${amarillo}está vacío. No hay carpetas ni archivos dentro.${borra_colores}"
+        sleep 3
+        exit 1
+    fi
+
+    echo -e "${azul} --- Gestión de permisos ACL para carpetas compartidas en${borra_colores} $base_dir ${azul}---${borra_colores}"
+    echo ""
+    echo "      1 = Control total (rwx)"
+    echo "      2 = Solo lectura (rx)"
+    echo "      3 = Sin acceso"
+    echo "  Enter = Mantener permisos actuales"
+
+    carpetas=($(ls -1 "$base_dir"))
+
+    # Construir arreglo usuarios con etiqueta [admin] si aplica
+    usuarios=()
+    for usuario in $(awk -F: '$3 >= 1000 && $1 != "nobody" { print $1 }' /etc/passwd); do
+        if id -nG "$usuario" | grep -qwE 'sudo|wheel|admin'; then
+            usuarios+=("$usuario [admin]")
+        else
+            usuarios+=("$usuario")
+        fi
+    done
+
+    echo ""
+    echo -e "${azul} Permisos ACL actuales por carpeta y usuario (ordenado por usuario):${borra_colores}"
+
+    acl_entries=()
+    for carpeta in "${carpetas[@]}"; do
+        while IFS=: read -r _ usuario permisos; do
+            [[ -z "$usuario" || "$usuario" == "$USER" ]] && continue
+            acl_entries+=("$usuario|$carpeta|$permisos")
+        done < <(getfacl -cp "$base_dir/$carpeta")
+    done
+
+    # Ordenar las entradas acl por usuario
+    IFS=$'\n' sorted_entries=($(printf "%s\n" "${acl_entries[@]}" | sort))
+
+    echo -e "${verde}"
+    printf "%-25s %-25s %-10s\n" "Usuario" "Carpeta" "Permisos"
+    printf "%-25s %-25s %-10s\n" "-------" "-------" "--------"
+    echo -e "${borra_colores}"
+
+    # Mostrar tabla completa con TODOS los usuarios y carpetas, con permisos o --- si no tiene
+    for usuario_raw in "${usuarios[@]}"; do
+        usuario=$(echo "$usuario_raw" | awk '{print $1}')
+        for carpeta in "${carpetas[@]}"; do
+            permiso="---"  # Por defecto si no tiene permiso asignado
+            for entry in "${acl_entries[@]}"; do
+                IFS='|' read -r u c p <<< "$entry"
+                if [[ "$u" == "$usuario" && "$c" == "$carpeta" ]]; then
+                    permiso=$p
+                    break
+                fi
+            done
+            printf "%-25s %-25s %-10s\n" "$usuario_raw" "$carpeta" "$permiso"
+        done
+    done
+
+    # Modificar permisos
+    for usuario_raw in "${usuarios[@]}"; do
+        usuario=$(echo "$usuario_raw" | awk '{print $1}')
+        for carpeta in "${carpetas[@]}"; do
+            echo ""
+            read -p "$(echo -e "${azul} Permisos para${borra_colores} $usuario_raw ${azul}en${borra_colores} $carpeta ${azul}[1=rwx, 2=rx, 3=---, Enter=mantener]: ${borra_colores}")" opcion
+
+            case $opcion in
+                1)
+                    sudo setfacl -R -m u:$usuario:rwx "$base_dir/$carpeta"
+                    echo " -> Se otorgó control total a $usuario en $carpeta"
+                    ;;
+                2)
+                    sudo setfacl -R -m u:$usuario:rx "$base_dir/$carpeta"
+                    echo " -> Se otorgó solo lectura a $usuario en $carpeta"
+                    ;;
+                3)
+                    sudo setfacl -R -m u:$usuario:--- "$base_dir/$carpeta"
+                    echo " -> Se eliminó el acceso de $usuario en $carpeta"
+                    ;;
+                "")
+                    echo " -> Permisos actuales mantenidos para $usuario en $carpeta"
+                    ;;
+                *)
+                    echo " -> Opción no válida. No se aplicó ningún cambio para $usuario en $carpeta."
+                    ;;
+            esac
+        done
+    done
+
+    echo -e "\nCambios de permisos finalizados."
+}
+
+
+
+function control_ejecucion(){
+    if [[ $NombreScript == "Linux User Manager" ]]; then
+        echo ""
+    else
+        clear
+        echo ""
+        echo -e "${amarillo} Hay que ejecutar el script desde LinuxUserManager.sh${borra_colores}"
+        echo ""
+        echo -e "${azul} GRACIAS POR UTILIZAR MI SCRIPT${borra_colores}"
+        echo ""
+        sleep 1
+        exit
+    fi
+    clear
+}
+
+control_ejecucion
+modificar_permisos
