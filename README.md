@@ -35,3 +35,16 @@ Muestra un menú desde donde el usuario puede:
 ## Resumen
 Este script está diseñado para facilitar tareas comunes de administración de usuarios y compartición de archivos en redes locales.  
 Es especialmente útil en entornos educativos, pequeñas oficinas o para usuarios que deseen automatizar configuraciones de red local.
+
+## Instalacion 
+Clonar el repositorio y ejecutar LinuxUserManager.sh
+
+```  
+git clone https://github.com/sukigsx/LinuxUserManager.git
+```
+
+Tambien puedes utilizar mi script (ejecutar_scripts).
+
+```  
+git clone https://github.com/sukigsx/ejecutar_scripts.git  
+```
