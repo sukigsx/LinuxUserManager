@@ -62,7 +62,7 @@ function configurar_samba() {
     show_users
     listar_recursos_samba
     echo ""
-    read -p " Nombre del recurso compartido (el que se ve): " recurso_compartido
+    read -p " Nombre del recurso compartido que quieres añadir: " recurso_compartido
 
     # Leer usuarios y verificar existencia
     #while true; do
