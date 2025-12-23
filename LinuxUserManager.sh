@@ -72,7 +72,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 echo -e "${verde}Ejecutando como root.${borra_colores}"
-sleep 10
+sleep 2
 
 }
 
