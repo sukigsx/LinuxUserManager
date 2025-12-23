@@ -58,8 +58,9 @@ borra_colores="\033[0m\e[0m" #borra colores
 check_root() {
 # Comprobar si se ejecuta como root
 echo ""
-echo -e "${amarillo}Este script necesita permisos de administrador.${borra_colores}"
-echo -e "${azul}Comprobando permisos sudo${borra_colores}"
+echo -e "${amarillo} Este script necesita permisos de administrador.${borra_colores}"
+echo ""
+echo -e "${azul} Comprobando permisos sudo${borra_colores}"
 echo ""
 if [[ $EUID -ne 0 ]]; then
     # Comprobar que sudo existe
