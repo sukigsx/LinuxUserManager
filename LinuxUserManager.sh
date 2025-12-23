@@ -56,7 +56,6 @@ borra_colores="\033[0m\e[0m" #borra colores
 
 # Función que comprueba si se ejecuta como root
 check_root() {
-clear
 # Comprobar si se ejecuta como root
 echo ""
 echo -e "${amarillo}Este script necesita permisos de administrador.${borra_colores}"
