@@ -257,9 +257,9 @@ function carpeta_base(){
 
 clear
 menu_info
-read "despues de menuinfo" p
+read -p "despues de menuinfo" p
 check_root
-read "despues de roor" p
+read -p "despues de roor" p
 conexion
 if [ $conexion = "SI" ]; then
     actualizar_script
