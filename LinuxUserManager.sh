@@ -265,7 +265,7 @@ function carpeta_base(){
 
 clear
 menu_info
-check_root
+
 conexion
 if [ $conexion = "SI" ]; then
     actualizar_script
@@ -302,7 +302,7 @@ else
     fi
 fi
 
-
+check_root
 while :
 do
 clear
