@@ -57,7 +57,7 @@ borra_colores="\033[0m\e[0m" #borra colores
 # Función que comprueba si se ejecuta como root
 check_root() {
     clear
-    menu_info
+    #menu_info
 
 
     if [ "$EUID" -ne 0 ]; then
@@ -258,7 +258,6 @@ function carpeta_base(){
 clear
 menu_info
 check_root
-read p
 conexion
 if [ $conexion = "SI" ]; then
     actualizar_script
