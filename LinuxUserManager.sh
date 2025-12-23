@@ -65,7 +65,7 @@ check_root() {
         echo -e "${amarillo} Este script necesita permisos de sudo${borra_colores}"
         echo ""
         exec sudo bash "$0" "$@"
-        echo -e "${verde} Ejecutando como root${borra_colores}"; sleep 2
+        #echo -e "${verde} Ejecutando como root${borra_colores}"; sleep 2
     fi
 }
 
