@@ -58,6 +58,16 @@ borra_colores="\033[0m\e[0m" #borra colores
 check_root() {
     clear
     menu_info
+
+
+    if [ "$EUID" -ne 0 ]; then
+        echo ""
+        echo -e "${amarillo} Este script necesita permisos de sudo${borra_colores}"
+        echo ""
+        exec sudo bash "$0" "$@"
+        echo -e "${verde} Ejecutando como root${borra_colores}"; sleep 2
+    fi
+
   if [ "$EUID" -ne 0 ]; then
     echo ""
     echo -e "${amarillo} Este script necesita privilegios de root ingresa la contraseña.${borra_colores}"
