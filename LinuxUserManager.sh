@@ -60,7 +60,7 @@ check_root() {
 echo ""
 echo -e "${amarillo} Este script necesita permisos de administrador.${borra_colores}"
 echo ""
-echo -e "${azul} Comprobando permisos sudo para el usuario${borra_colores} $(whoami)"
+echo -e "${azul} Comprobando permisos sudo${borra_colores}"
 echo ""
 if [[ $EUID -ne 0 ]]; then
     # Comprobar que sudo existe
