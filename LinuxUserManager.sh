@@ -56,17 +56,34 @@ borra_colores="\033[0m\e[0m" #borra colores
 
 # Función que comprueba si se ejecuta como root
 check_root() {
-    clear
-    #menu_info
+#    clear
+#    if [ "$EUID" -ne 0 ]; then
+#        echo ""
+#        echo -e "${amarillo} Este script necesita permisos de sudo${borra_colores}"
+#        echo ""
+#        exec sudo bash "$0" "$@"
+#        echo -e "${verde} Ejecutando como root${borra_colores}"; sleep 2
+#    fi
 
+# Comprobar si se ejecuta como root
+if [[ $EUID -ne 0 ]]; then
+    echo ""
+    echo -e "${amarillo}Este script necesita permisos de administrador.${borra_colores}"
+    echo -e "${azul}Solicitando privilegios con sudo...${borra_colores}"
+    echo ""
 
-    if [ "$EUID" -ne 0 ]; then
-        echo ""
-        echo -e "${amarillo} Este script necesita permisos de sudo${borra_colores}"
-        echo ""
-        exec sudo bash "$0" "$@"
-        #echo -e "${verde} Ejecutando como root${borra_colores}"; sleep 2
+    # Comprobar que sudo existe
+    if ! command -v sudo &>/dev/null; then
+        echo -e "${rojo}Error: sudo no está instalado.${borra_colores}"
+        exit 1
     fi
+
+    exec sudo bash "$0" "$@"
+fi
+
+echo -e "${verde}Ejecutando como root.${borra_colores}"
+sleep 1
+
 }
 
 
