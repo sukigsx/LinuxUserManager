@@ -67,28 +67,6 @@ check_root() {
         exec sudo bash "$0" "$@"
         echo -e "${verde} Ejecutando como root${borra_colores}"; sleep 2
     fi
-
-  if [ "$EUID" -ne 0 ]; then
-    echo ""
-    echo -e "${amarillo} Este script necesita privilegios de root ingresa la contraseña.${borra_colores}"
-
-    # Pedir contraseña para sudo
-    echo -e "${rojo}"
-
-    # Validar contraseña mediante sudo -v (verifica sin ejecutar comando)
-    if sudo -v; then
-      echo ""
-      echo -e "${verde} Autenticación correcta. Reejecutando como root...${borra_colores}"; sleep 2
-      # Reejecuta el script como root
-      #exec sudo "$0" "$@"
-    else
-      echo ""
-      echo -e "${rojo} Contraseña incorrecta o acceso denegado. Saliendo del script.${borra_colores}"; sleep 3
-      echo ""
-      echo -e "${azul} GRACIAS POR UTILIZAR MI SCRIPT${borra_colores}"
-     echo ""; exit
-    fi
-  fi
 }
 
 
