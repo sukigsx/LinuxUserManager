@@ -37,10 +37,13 @@ nombre_carpeta_repositorio="LinuxUserManager" #poner el nombre de la carpeta cua
         [jq]="jq"
         [sed]="sed"
         [getfacl]="acl"
-        [smbclient]="smbclient"
-        #[smbclient]="samba"
         [awk]="gawk"
         [realpath]="coreutils"
+        [smbclient]="smbclient"
+        [cifs-utils]="cifs-utils"
+        [samba-common]="samba-common"
+        [smbclient]="samba"
+        #samba smbclient cifs-utils samba-common
     )
 
 
