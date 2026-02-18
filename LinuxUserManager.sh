@@ -157,7 +157,7 @@ for comando in "${!requeridos[@]}"; do
                 echo -e "${amarillo} Se necesita instalar ${borra_colores}$comando${amarillo} para la ejecucion del script${borra_colores}"
                 ### check_root
                 echo " Instalando ${requeridos[$comando]}. Intento $contador/3."
-                $instalar ${requeridos[$comando]} &>/dev/null
+                $instalar ${requeridos[$comando]} #&>/dev/null
                 let "contador=contador+1"
                 command -v $comando &>/dev/null
                 sino=$?
