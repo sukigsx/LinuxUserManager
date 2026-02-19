@@ -402,8 +402,8 @@ fi
 
 
 
-clear
-menu_info
+#clear
+#menu_info
 
 
 
