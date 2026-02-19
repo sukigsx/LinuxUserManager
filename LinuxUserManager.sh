@@ -319,8 +319,8 @@ for servicio in "${servicios[@]}"; do
             sudo touch /etc/samba/smb.conf > /dev/null 2>&1
             sudo systemctl enable "$servicio" > /dev/null 2>&1
             sudo systemctl start "$servicio" > /dev/null 2>&1
-            export servicio
-#po
+            export $servicio
+
             if systemctl is-active --quiet "$servicio"; then
                 echo -e " Servicio${azul} $servicio ${borra_colores}activado correctamente."
                 echo ""
