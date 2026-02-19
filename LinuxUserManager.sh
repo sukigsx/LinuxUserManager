@@ -171,7 +171,7 @@ for comando in "${!requeridos[@]}"; do
     echo ""
     echo -e "${azul} Todo el software ${verde}OK${borra_colores}"
     software="SI"
-    sleep 2; read p
+    sleep 2
 }
 
 
@@ -292,6 +292,56 @@ terminal_bash() {
     fi
 }
 
+systemctl_activar(){
+# Verificar que systemctl exista
+if ! command -v systemctl &>/dev/null; then
+    echo -e "${amarillo} Este sistema no usa systemd.${borra_colores}"
+    echo -e "${rojo} NO puedo activar el servicio de cron, tendras que hacerlo manualmente.${borra_colores}"
+    echo ""
+    exit 1
+fi
+
+# Posibles nombres del servicio
+#servicios=("cron" "cronie" "crond")
+servicios=("smbd")
+
+encontrado=0
+
+for servicio in "${servicios[@]}"; do
+    if systemctl list-unit-files | grep -q "^${servicio}\.service"; then
+        encontrado=1
+        #echo "Servicio detectado: $servicio"
+
+        if systemctl is-active --quiet "$servicio"; then
+            echo -e " El servicio${azul} $servicio ${borra_colores}está ACTIVO."
+            echo ""
+        else
+            echo -e " Activando y habilitando${azul} $servicio${borra_colores}..."
+            sudo systemctl enable "$servicio" > /dev/null 2>&1
+            sudo systemctl start "$servicio" > /dev/null 2>&1
+
+            if systemctl is-active --quiet "$servicio"; then
+                echo -e " Servicio${azul} $servicio ${borra_colores}activado correctamente."
+                echo ""
+            else
+                echo -e "${amarillo} No se pudo activar el servicio.${borra_colores}"
+                echo -e "${rojo} NO puedo activar el servicio de cron, tendras que hacerlo manualmente.${borra_colores}"
+                echo ""
+                exit 1
+            fi
+        fi
+        break
+    fi
+done
+
+if [ "$encontrado" -eq 0 ]; then
+    echo -e "${amarillo}No se encontró ningún servicio de cron instalado.${borra_colores}"
+    echo ""
+    exit 1
+fi
+
+}
+
 #logica de arranque
 #variables de resultado $conexion $software $actualizado
 #funciones actualizar_script, conexion, software_necesario
@@ -350,10 +400,12 @@ else
     fi
 fi
 
+
+
 clear
 menu_info
 
-
+systemctl_activar
 
 
 
