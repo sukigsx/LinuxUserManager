@@ -332,7 +332,6 @@ for servicio in "${servicios[@]}"; do
         fi
         break
     fi
-export servicio
 
 done
 
