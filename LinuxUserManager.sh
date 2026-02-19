@@ -301,9 +301,7 @@ if ! command -v systemctl &>/dev/null; then
     exit 1
 fi
 
-# Posibles nombres del servicio
-#servicios=("cron" "cronie" "crond")
-servicios=("smbd")
+servicios=("smbd" "smb" "nmbd")
 
 encontrado=0
 
