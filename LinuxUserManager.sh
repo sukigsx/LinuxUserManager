@@ -403,7 +403,7 @@ fi
 clear
 menu_info
 
-systemctl_activar
+
 
 
 
@@ -470,6 +470,7 @@ function carpeta_base(){
 
 clear
 menu_info
+systemctl_activar
 #comprueba la carpeta base y lo muestra en el menu
 if [ -f /tmp/base_dir ]; then
     base_dir=$(cat /tmp/base_dir)
