@@ -320,7 +320,7 @@ for servicio in "${servicios[@]}"; do
             sudo systemctl enable "$servicio" > /dev/null 2>&1
             sudo systemctl start "$servicio" > /dev/null 2>&1
             export servicio
-
+#po
             if systemctl is-active --quiet "$servicio"; then
                 echo -e " Servicio${azul} $servicio ${borra_colores}activado correctamente."
                 echo ""

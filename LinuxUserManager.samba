@@ -106,7 +106,7 @@ function configurar_samba() {
         echo -e " ⚠️ ${amarillo}El recurso${borra_colores} $recurso_compartido ${amarillo}ya existe. No se añadió nada.${borra_colores}"
     fi
 
-    sudo systemctl restart smbd
+    sudo systemctl restart $servicio
     echo -e ""
     echo -e " 🔁 ${verde}Servicio Samba reiniciado.${borra_colores}"; sleep 2
     recursos_compartidos="si"
