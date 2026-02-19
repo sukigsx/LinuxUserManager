@@ -333,6 +333,7 @@ for servicio in "${servicios[@]}"; do
         break
     fi
 export servicio
+
 done
 
 if [ "$encontrado" -eq 0 ]; then

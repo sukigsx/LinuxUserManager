@@ -168,7 +168,7 @@ function menu() {
             1) configurar_samba ;;
             2) ver_configuracion ;;
             3) eliminar_configuracion ;;
-            4) sudo systemctl restart $servicio; echo ""; echo -e "🔁 ${verde}Servicio Samba reiniciado.${borra_colores}"; sleep 2 ;;
+            4) echo "contenido de la variable $servicio"; sudo systemctl restart $servicio; echo ""; echo -e "🔁 ${verde}Servicio Samba reiniciado.${borra_colores}"; sleep 2 ;;
             99) break ;;
             *) echo ""; echo -e " ❌ ${amarillo}Opción inválida.${borra_colores}"; sleep 2 ;;
         esac
