@@ -315,6 +315,8 @@ for servicio in "${servicios[@]}"; do
             echo ""
         else
             echo -e " Activando y habilitando${azul} $servicio${borra_colores}..."
+            sudo mkdir /etc/samba > /dev/null 2>&1
+            sudo touch /etc/samba/smb.conf > /dev/null 2>&1
             sudo systemctl enable "$servicio" > /dev/null 2>&1
             sudo systemctl start "$servicio" > /dev/null 2>&1
 
@@ -467,7 +469,7 @@ function carpeta_base(){
 
 
 
-
+while true; do
 clear
 menu_info
 systemctl_activar
