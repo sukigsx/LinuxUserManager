@@ -203,8 +203,8 @@ function menu() {
     while true; do
         clear
         menu_info
+        echo ""
         systemctl_activar
-        echo
         echo -e "${azul}--- Gestor de Configuración de Samba, carpeta base${borra_colores} $base_dir ${azul}---${borra_colores}"
         echo -e ""
         echo -e "${azul}  1.${borra_colores} Añadir recurso compartido"
@@ -219,7 +219,7 @@ function menu() {
             1) configurar_samba ;;
             2) ver_configuracion ;;
             3) eliminar_configuracion ;;
-            4) echo "contenido de la variable $servicio"; sudo systemctl restart $servicio; echo ""; echo -e "🔁 ${verde}Servicio Samba reiniciado.${borra_colores}"; sleep 2 ;;
+            4) sudo systemctl restart $servicio; echo ""; echo -e "🔁 ${verde}Servicio Samba reiniciado.${borra_colores}"; sleep 2 ;;
             99) break ;;
             *) echo ""; echo -e " ❌ ${amarillo}Opción inválida.${borra_colores}"; sleep 2 ;;
         esac
