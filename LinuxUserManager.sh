@@ -39,10 +39,8 @@ nombre_carpeta_repositorio="LinuxUserManager" #poner el nombre de la carpeta cua
         [getfacl]="acl"
         [awk]="gawk"
         [realpath]="coreutils"
-        #[smbclient]="smbclient"
-        #[cifs-utils]="cifs-utils"
         [samba-tool]="samba"
-        #samba smbclient cifs-utils samba-common
+        [xdg-user-dir]="xdg-user-dirs"
     )
 
 
