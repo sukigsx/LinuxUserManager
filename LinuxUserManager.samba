@@ -229,7 +229,7 @@ function menu() {
 }
 
 function control_ejecucion(){
-    if [[ $NombreScript == "Linux User Manager" ]]; then
+    if [[ $NombreScript == "LinuxUserManager" ]]; then
         echo ""
     else
         clear
