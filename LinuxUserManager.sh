@@ -456,12 +456,14 @@ echo -e ""
 echo -n " Seleccione una opcion del menu -> "
 read opcion
 case $opcion in
-        1)  sudo -E bash $ruta_ejecucion/LinuxUserManager.usuarios
+        1)  #sudo -E bash $ruta_ejecucion/LinuxUserManager.usuarios
+            sudo NombreScript="$NombreScript" bash "$ruta_ejecucion/LinuxUserManager.usuarios"
             ;;
 
         2)  #comprueba la carpeta base y lo muestra en el menu
             if [ -f /tmp/base_dir ]; then
-                sudo -E bash $ruta_ejecucion/LinuxUserManager.carpetas
+                #sudo -E bash $ruta_ejecucion/LinuxUserManager.carpetas
+                sudo NombreScript="$NombreScript" bash "$ruta_ejecucion/LinuxUserManager.carpetas"
             else
                 echo ""
                 echo -e "${amarillo} Carpeta base NO seleccionada${borra_colores}"; sleep 2
@@ -470,7 +472,8 @@ case $opcion in
 
         3)  #comprueba la carpeta base y lo muestra en el menu
             if [ -f /tmp/base_dir ]; then
-                sudo -E bash $ruta_ejecucion/LinuxUserManager.permisos
+                #sudo -E bash $ruta_ejecucion/LinuxUserManager.permisos
+                sudo NombreScript="$NombreScript" bash "$ruta_ejecucion/LinuxUserManager.permisos"
             else
                 echo ""
                 echo -e "${amarillo} Carpeta base NO seleccionada${borra_colores}"; sleep 2
@@ -479,7 +482,8 @@ case $opcion in
 
         4)  #comprueba la carpeta base y lo muestra en el menu
             if [ -f /tmp/base_dir ]; then
-                sudo -E bash $ruta_ejecucion/LinuxUserManager.samba
+                #sudo -E bash $ruta_ejecucion/LinuxUserManager.samba
+                sudo NombreScript="$NombreScript" bash "$ruta_ejecucion/LinuxUserManager.samba"
             else
                 echo ""
                 echo -e "${amarillo} Carpeta base NO seleccionada${borra_colores}"; sleep 2
