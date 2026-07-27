@@ -92,7 +92,7 @@ function configurar_samba() {
     path = $base_dir
     valid users = ${usuarios_validos[*]}
     read only = no
-    browsable = yes
+    browseable = yes
     writable = yes
     create mask = 0775
     directory mask = 0775
