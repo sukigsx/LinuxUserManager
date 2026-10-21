@@ -354,7 +354,7 @@ if ! command -v systemctl &>/dev/null; then
     exit 1
 fi
 
-servicios=("smbd" "smb" "nmbd")
+servicios=("smbd" "smb" "nmbd" "cron" "crond")
 
 encontrado=0
 
